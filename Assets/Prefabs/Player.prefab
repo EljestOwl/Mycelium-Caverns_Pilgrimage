@@ -217,9 +217,11 @@ MonoBehaviour:
   canCrouch: 1
   canUseHeadbob: 1
   willSlideOnSlopes: 1
+  canInteract: 1
   sprintKey: 304
   jumpKey: 32
   crouchKey: 306
+  interactKey: 101
   walkSpeed: 3
   sprintSpeed: 6
   crouchSpeed: 1.5
@@ -241,7 +243,11 @@ MonoBehaviour:
   sprintBobAmount: 0.1
   crouchBobSpeed: 7
   crouchBobAmount: 0.05
-  currentMoveInput: {x: 0, y: 0}
+  interactionDistance: 1
+  interactionRayPoint: {x: 0.5, y: 0.5, z: 0}
+  interactionLayers:
+    serializedVersion: 2
+    m_Bits: 512
 --- !u!1 &5319198924299059435
 GameObject:
   m_ObjectHideFlags: 0

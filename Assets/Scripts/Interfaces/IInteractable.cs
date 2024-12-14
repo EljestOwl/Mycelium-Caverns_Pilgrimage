@@ -1,6 +1,9 @@
+using UnityEngine;
+
 public interface IInteractable
 {
-	public void OnInteract();
-	public void OnLookedAt();
-	public void OnNotLookedAt();
+    GameObject gameObject { get; }
+    public void OnInteract();
+	public void OnFocused();
+	public void OnLoseFocused();
 }

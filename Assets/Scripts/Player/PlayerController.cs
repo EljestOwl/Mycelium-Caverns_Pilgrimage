@@ -17,13 +17,15 @@ public class PlayerController : MonoBehaviour
 	[SerializeField] private bool canCrouch = true;
 	[SerializeField] private bool canUseHeadbob = true;
 	[SerializeField] private bool willSlideOnSlopes = true;
+    [SerializeField] private bool canInteract = true;
 
-	[Header("Controls:")]
+    [Header("Controls:")]
 	[SerializeField] private KeyCode sprintKey = KeyCode.LeftShift;
 	[SerializeField] private KeyCode jumpKey = KeyCode.Space;
 	[SerializeField] private KeyCode crouchKey = KeyCode.LeftControl;
+    [SerializeField] private KeyCode interactKey = KeyCode.E;
 
-	[Header("Movement Parameters:")]
+    [Header("Movement Parameters:")]
 	[SerializeField] private float walkSpeed = 3f;
 	[SerializeField] private float sprintSpeed = 6f;
 	[SerializeField] private float crouchSpeed = 1.5f;
@@ -76,11 +78,17 @@ public class PlayerController : MonoBehaviour
 		}
 	}
 
-	private Camera playerCamera;
+    [Header("Interaction Parameters:")]
+    [SerializeField] private float interactionDistance = default;
+    [SerializeField] private Vector3 interactionRayPoint = default;
+    [SerializeField] private LayerMask interactionLayers = default;
+    private IInteractable currentInteractable;
+
+    private Camera playerCamera;
 	private CharacterController characterController;
 
 	private Vector3 moveDirection;
-	[SerializeField] private Vector2 currentMoveInput;
+	private Vector2 currentMoveInput;
 
 	private float rotationX = 0;
 
@@ -109,8 +117,13 @@ public class PlayerController : MonoBehaviour
 				HandleCrouch();
 			if (canUseHeadbob)
 				HandleHeadbob();
+			if (canInteract)
+			{
+				HandeInteractionCheck();
+				HandeInteractionInput();
+			}
 
-			ApplyFinalMovement();
+            ApplyFinalMovement();
 		}
 	}
 
@@ -192,7 +205,34 @@ public class PlayerController : MonoBehaviour
 		}
 	}
 
-	private void ApplyFinalMovement()
+	private void HandeInteractionCheck()
+	{
+        if (Physics.Raycast(playerCamera.ViewportPointToRay(interactionRayPoint), out RaycastHit hit, interactionDistance))
+        {
+            if (hit.collider.gameObject.layer == 9 && (currentInteractable == null || hit.collider.GetInstanceID() != currentInteractable.gameObject.GetInstanceID()))
+            {
+                hit.collider.gameObject.TryGetComponent(out currentInteractable);
+                if (currentInteractable != null)
+                {
+                    currentInteractable.OnFocused();
+                }
+            }
+        }
+        else if (currentInteractable != null)
+        {
+            currentInteractable.OnLoseFocused();
+            currentInteractable = null;
+        }
+    }
+    private void HandeInteractionInput()
+    {
+        if (Input.GetKeyDown(interactKey) && currentInteractable != null && Physics.Raycast(playerCamera.ViewportPointToRay(interactionRayPoint), out RaycastHit hit, interactionDistance, interactionLayers))
+        {
+			currentInteractable.OnInteract();
+        }
+    }
+
+    private void ApplyFinalMovement()
 	{
 		if (!characterController.isGrounded)
 			moveDirection.y -= gravity * Time.deltaTime;
